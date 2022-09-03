@@ -5,7 +5,7 @@ import java.util.stream.Stream
 class Source<T>(private val source: Iterator<T>) {
   private var consumed: Boolean = false
 
-  fun pipe(pipe: Pipeable<T>) {
+  fun pipe(pipe: Sinkable<T>) {
     if (consumed) throw IllegalStateException("Source has already been consumed")
     consumed = true
     while (source.hasNext()) {
