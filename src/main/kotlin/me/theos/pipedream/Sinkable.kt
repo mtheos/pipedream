@@ -1,4 +1,5 @@
 package me.theos.pipedream
 
-interface Sinkable {
+interface Sinkable<in T> {
+  fun accept(elem: T, last: Boolean)
 }
