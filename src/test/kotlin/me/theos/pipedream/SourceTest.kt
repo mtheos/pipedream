@@ -1,27 +1,36 @@
 package me.theos.pipedream
 
-import org.junit.jupiter.api.BeforeAll
+import org.assertj.core.api.Assertions.assertThatThrownBy
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import kotlin.test.assertTrue
 
 internal class SourceTest {
 
   companion object {
     private var source: Source<String>? = null
-    @JvmStatic
-    @BeforeAll
-    fun setUp() {
-      source = sourceOf("One", "Two", "Three")
-    }
+  }
+
+  @BeforeEach
+  fun setUp2() {
+    source = sourceOf("One", "Two", "Three")
   }
 
   @Test
-  fun pipe() {
+  fun testSourcePipesInOrder() {
     val produced = setOf("One", "Two", "Three")
     val final = "Three"
-    val sink = Sinkable { elem: String, last: Boolean ->
-      kotlin.test.assertTrue(elem in produced, "Element $elem not in $produced")
-      kotlin.test.assertTrue(elem == final || !last, "Element $elem not last")
+    val sink = { elem: String, last: Boolean ->
+      assertTrue(elem in produced, "Element $elem not in $produced")
+      assertTrue(elem == final || !last, "Element $elem not last")
     }
     source!!.pipe(sink)
+  }
+
+  @Test
+  fun testSourceCanOnlyBeUsedOnce() {
+    val sink = Sinkable { _: String, _: Boolean -> }
+    source!!.pipe(sink)
+    assertThatThrownBy { source!!.pipe(sink) }.isExactlyInstanceOf(IllegalStateException::class.java)
   }
 }
