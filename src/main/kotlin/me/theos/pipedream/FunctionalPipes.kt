@@ -5,7 +5,7 @@ import java.util.function.BiFunction
 import java.util.function.Function
 import java.util.function.Predicate
 
-class FunctionalPipe<T, R>(private val fn: Function<T, R>) : Sinkable<T> {
+internal class FunctionalPipe<T, R>(private val fn: Function<T, R>) : Sinkable<T> {
   private var sink: Sinkable<R>? = null
 
   override fun toString(): String {
@@ -23,7 +23,7 @@ class FunctionalPipe<T, R>(private val fn: Function<T, R>) : Sinkable<T> {
   }
 }
 
-class BiFunctionalPipe<T, R>(private val fn: BiFunction<T, Boolean, R>) : Sinkable<T> {
+internal class BiFunctionalPipe<T, R>(private val fn: BiFunction<T, Boolean, R>) : Sinkable<T> {
   private var sink: Sinkable<R>? = null
 
   override fun toString(): String {
@@ -41,17 +41,33 @@ class BiFunctionalPipe<T, R>(private val fn: BiFunction<T, Boolean, R>) : Sinkab
   }
 }
 
-class FilterPipe<T>(private var fn: Predicate<T>) : Pipe<T>(), Pipeable<T> {
+internal class FilterPipe<T>(private var fn: Predicate<T>) : Pipe<T>(), Pipeable<T> {
   override fun accept(elem: T, last: Boolean) {
-    sinks.forEach { sink ->
-      if (fn.test(elem)) {
-        sink.accept(elem, last)
-      }
+    if (fn.test(elem)) {
+      super.accept(elem, last)
     }
   }
 }
 
-class ReductionPipe<T, R>(private var ident: R, private val fn: (R, T) -> R) : Sinkable<T> {
+internal class ReductionPipe<T>(private val fn: (T, T) -> T) : Pipe<T>(), Sinkable<T> {
+  private var acc: T? = null
+
+  override fun toString(): String {
+    return "${javaClass.simpleName}{sinks=$sinks}"
+  }
+
+  override fun accept(elem: T, last: Boolean) {
+    acc = when (acc) {
+      null -> elem
+      else -> fn(acc!!, elem)
+    }
+    if (last) {
+      super.accept(acc!!, true)
+    }
+  }
+}
+
+internal class FoldingPipe<T, R>(private var acc: R, private val fn: (R, T) -> R) : Sinkable<T> {
   private var sink: Sinkable<R>? = null
 
   override fun toString(): String {
@@ -60,9 +76,9 @@ class ReductionPipe<T, R>(private var ident: R, private val fn: (R, T) -> R) : S
 
   override fun accept(elem: T, last: Boolean) {
     Preconditions.checkNotNull(sink)
-    ident = fn(ident, elem)
+    acc = fn(acc, elem)
     if (last) {
-      sink!!.accept(ident, true)
+      sink!!.accept(acc, true)
     }
   }
 
