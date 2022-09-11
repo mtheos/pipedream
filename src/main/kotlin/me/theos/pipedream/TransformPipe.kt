@@ -10,11 +10,15 @@ abstract class TransformPipe<T, R> : Sinkable<T> {
   }
 
   override fun accept(elem: T, last: Boolean) {
-    Preconditions.checkNotNull(sink)
-    sink!!.accept(transform(elem, last), last)
+    sinkAccept(transform(elem, last)!!, last)
   }
 
-  abstract fun transform(elem: T, last: Boolean): R
+  protected fun sinkAccept(elem: R, last: Boolean) {
+    Preconditions.checkNotNull(sink)
+    sink!!.accept(elem, last)
+  }
+
+  abstract fun transform(elem: T, last: Boolean): R?
 
   fun makePipe(): Pipeable<R> {
     Preconditions.checkState(sink == null)
