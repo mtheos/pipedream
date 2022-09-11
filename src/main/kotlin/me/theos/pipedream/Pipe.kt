@@ -1,5 +1,6 @@
 package me.theos.pipedream
 
+import com.google.common.base.Preconditions
 import java.util.function.BiFunction
 import java.util.function.Consumer
 import java.util.function.Function
@@ -11,6 +12,7 @@ open class Pipe<T> : Pipeable<T> {
   protected val sinks: MutableList<Sinkable<T>> = mutableListOf()
 
   override fun accept(elem: T, last: Boolean) {
+    Preconditions.checkState(sinks.size > 0, "Pipe doesn't connect to anything")
     sinks.forEach { sink ->
       sink.accept(elem, last)
     }
