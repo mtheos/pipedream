@@ -35,8 +35,15 @@ open class Pipe<T> : Pipeable<T> {
     return BiFunctionalPipe(transform).also { sinks.add(it) }.makePipe()
   }
 
-  override fun <R> reduce(ident: R, reducer: (R, T) -> R): Pipeable<R> {
-    return ReductionPipe(ident, reducer).also { sinks.add(it) }.makePipe()
+  override fun reduce(reducer: (T, T) -> T): Pipeable<T> {
+    return ReductionPipe(reducer).also { sinks.add(it) }
+  }
+
+  override fun <R> reduce(acc: R, reducer: (R, T) -> R): Pipeable<R> {
+    return fold(acc, reducer)
+  }
+  override fun <R> fold(acc: R, reducer: (R, T) -> R): Pipeable<R> {
+    return FoldingPipe(acc, reducer).also { sinks.add(it) }.makePipe()
   }
 
   override fun filter(predicate: Predicate<T>): Pipeable<T> {

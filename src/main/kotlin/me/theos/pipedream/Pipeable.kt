@@ -18,5 +18,7 @@ interface Pipeable<T> : Sinkable<T> {
   fun sink(sink: Consumer<T>)
   fun sink(sink: Sinkable<T>)
   fun sinkValue(): Supplier<T>
-  fun <R> reduce(ident: R, reducer: (prev: R, curr: T) -> R): Pipeable<R>
+  fun reduce(reducer: (acc: T, it: T) -> T): Pipeable<T>
+  fun <R> reduce(acc: R, reducer: (acc: R, it: T) -> R): Pipeable<R>
+  fun <R> fold(acc: R, reducer: (acc: R, it: T) -> R): Pipeable<R>
 }
