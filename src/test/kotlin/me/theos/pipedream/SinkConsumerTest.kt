@@ -6,10 +6,9 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 internal class SinkConsumerTest {
-
   companion object {
-    private var sinkList: List<String>? = null
-    private var sink: SinkConsumer<String>? = null
+    private lateinit var sinkList: List<String>
+    private lateinit var sink: SinkConsumer<String>
   }
 
   @BeforeEach
@@ -21,8 +20,8 @@ internal class SinkConsumerTest {
   @Test
   fun testSinkCallsConsumer() {
     val produced = setOf("One", "Two", "Three")
-    produced.forEach { sink!!.accept(it, false) }
-    assertEquals(produced.size, sinkList!!.size)
-    produced.forEach { assertTrue(sinkList!!.contains(it))}
+    produced.forEach { sink.accept(it, false) }
+    assertEquals(produced.size, sinkList.size)
+    produced.forEach { assertTrue(sinkList.contains(it))}
   }
 }

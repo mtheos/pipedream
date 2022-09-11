@@ -6,13 +6,12 @@ import org.junit.jupiter.api.Test
 import kotlin.test.assertTrue
 
 internal class SourceTest {
-
   companion object {
-    private var source: Source<String>? = null
+    private lateinit var source: Source<String>
   }
 
   @BeforeEach
-  fun setUp2() {
+  fun setUp() {
     source = sourceOf("One", "Two", "Three")
   }
 
@@ -24,13 +23,13 @@ internal class SourceTest {
       assertTrue(elem in produced, "Element $elem not in $produced")
       assertTrue(elem == final || !last, "Element $elem not last")
     }
-    source!!.pipe(sink)
+    source.pipe(sink)
   }
 
   @Test
   fun testSourceCanOnlyBeUsedOnce() {
     val sink = Sinkable { _: String, _: Boolean -> }
-    source!!.pipe(sink)
-    assertThatThrownBy { source!!.pipe(sink) }.isExactlyInstanceOf(IllegalStateException::class.java)
+    source.pipe(sink)
+    assertThatThrownBy { source.pipe(sink) }.isExactlyInstanceOf(IllegalStateException::class.java)
   }
 }
