@@ -7,19 +7,18 @@ import kotlin.test.assertTrue
 
 internal class SinkCollectionTest {
   companion object {
-    private lateinit var sinkList: List<String>
-    private lateinit var sink: SinkCollection<String>
+    private lateinit var sinkList: MutableList<String>
   }
 
   @BeforeEach
   fun setUp() {
     sinkList = mutableListOf()
-    sink = SinkCollection(sinkList as MutableList<String>)
   }
 
   @Test
   fun testSinkRemembersItems() {
     val produced = setOf("One", "Two", "Three")
+    val sink = SinkCollection(sinkList)
     produced.forEach { sink.accept(it, false) }
     assertEquals(produced.size, sinkList.size)
     produced.forEach { assertTrue(sinkList.contains(it))}
@@ -28,6 +27,7 @@ internal class SinkCollectionTest {
   @Test
   fun testSinkReturnsList() {
     val produced = setOf("One", "Two", "Three")
+    val sink = SinkCollection(sinkList)
     produced.forEach { sink.accept(it, false) }
     assertEquals(sink.get(), sinkList)
   }
@@ -35,6 +35,7 @@ internal class SinkCollectionTest {
   @Test
   fun testSinkReturnsIterator() {
     val produced = setOf("One", "Two", "Three")
+    val sink = SinkCollection(sinkList)
     produced.forEach { sink.accept(it, false) }
     sink.iterator().let { it1 ->
       sinkList.iterator().let { it2 ->

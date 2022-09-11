@@ -6,19 +6,17 @@ import kotlin.test.assertEquals
 
 internal class FoldingPipeTest {
   companion object {
-    private lateinit var fn: (Int, String) -> Int
-    private lateinit var pipe: FoldingPipe<String, Int>
+    private val fn = { acc: Int, it: String -> acc + it.length }
   }
 
   @BeforeEach
   fun setUp() {
-    fn = { acc, it -> acc + it.length }
-    pipe = FoldingPipe(0, fn)
   }
 
   @Test
   fun testFoldsElements() {
     val elements = listOf("One", "Two", "Three", "Four")
+    val pipe = FoldingPipe(0, fn)
     val sinkValue = pipe.makePipe().sinkValue()
     elements.iterator().let {
       while (it.hasNext()) {

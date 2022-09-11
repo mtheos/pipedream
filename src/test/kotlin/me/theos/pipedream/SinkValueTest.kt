@@ -7,17 +7,16 @@ import kotlin.test.assertEquals
 
 internal class SinkValueTest {
   companion object {
-    private lateinit var sink: SinkValue<String>
   }
 
   @BeforeEach
   fun setUp() {
-    sink = SinkValue()
   }
 
   @Test
   fun testSinkHoldsItem() {
     val produced = "One"
+    val sink = SinkValue<String>()
     sink.accept(produced, false)
     assertEquals(produced, sink.get())
   }
@@ -25,6 +24,7 @@ internal class SinkValueTest {
   @Test
   fun testSinkHoldsOnlyOneItem() {
     val produced = "One"
+    val sink = SinkValue<String>()
     sink.accept(produced, false)
     assertThatThrownBy { sink.accept(produced, false) }.isExactlyInstanceOf(IllegalStateException::class.java)
     assertEquals(produced, sink.get())

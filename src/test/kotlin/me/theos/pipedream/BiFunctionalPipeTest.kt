@@ -6,19 +6,17 @@ import kotlin.test.assertEquals
 
 internal class BiFunctionalPipeTest {
   companion object {
-    private lateinit var biFn: (String, Boolean) -> Int
-    private lateinit var biPipe: BiFunctionalPipe<String, Int>
+    private val biFn = { it: String, last: Boolean -> if (!last) it.length else 0 }
   }
 
   @BeforeEach
   fun setUp() {
-    biFn = { it, last -> if (!last) it.length else 0 }
-    biPipe = BiFunctionalPipe(biFn)
   }
 
   @Test
   fun testAppliesBiFn() {
     val elem = "One"
+    val biPipe = BiFunctionalPipe(biFn)
     var value: Int? = null
     biPipe.makePipe().sink { it, _ -> value = it }
     biPipe.accept(elem, false)

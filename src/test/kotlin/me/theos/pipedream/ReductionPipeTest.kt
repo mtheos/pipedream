@@ -6,19 +6,17 @@ import kotlin.test.assertEquals
 
 internal class ReductionPipeTest {
   companion object {
-    private lateinit var fn: (String, String) -> String
-    private lateinit var pipe: ReductionPipe<String>
+    private val fn = { acc: String, it: String -> "$acc $it" }
   }
 
   @BeforeEach
   fun setUp() {
-    fn = { acc, it -> "$acc $it" }
-    pipe = ReductionPipe(fn)
   }
 
   @Test
   fun testReducesElements() {
     val elements = listOf("One", "Two", "Three", "Four")
+    val pipe = ReductionPipe(fn)
     val sinkValue = pipe.sinkValue()
     elements.iterator().let {
       while (it.hasNext()) {

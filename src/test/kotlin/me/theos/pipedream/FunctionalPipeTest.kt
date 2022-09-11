@@ -6,19 +6,17 @@ import kotlin.test.assertEquals
 
 internal class FunctionalPipeTest {
   companion object {
-    private lateinit var fn: (String) -> Int
-    private lateinit var pipe: FunctionalPipe<String, Int>
+    private val fn = String::length
   }
 
   @BeforeEach
   fun setUp() {
-    fn = String::length
-    pipe = FunctionalPipe(fn)
   }
 
   @Test
   fun testAppliesFn() {
     val elem = "One"
+    val pipe = FunctionalPipe(fn)
     val sinkValue = pipe.makePipe().sinkValue()
     pipe.accept(elem, false)
     assertEquals(fn(elem), sinkValue.get())

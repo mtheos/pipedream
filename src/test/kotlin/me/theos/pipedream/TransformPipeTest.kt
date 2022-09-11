@@ -6,15 +6,13 @@ import kotlin.test.assertEquals
 
 internal class TransformPipeTest {
   companion object {
-    private lateinit var fn1: (String) -> Boolean
-    private lateinit var fn2: (String) -> Int
+    private val fn1 = { it: String -> it.length % 2 == 0 }
+    private val fn2 = { it: String -> it.length }
     private lateinit var pipe: TransformPipe<String, Int>
   }
 
   @BeforeEach
   fun setUp() {
-    fn1 = { it -> it.length % 2 == 0 }
-    fn2 = { it -> it.length }
     pipe = object : TransformPipe<String, Int>() {
       override fun accept(elem: String, last: Boolean) {
         val it = transform(elem, last)
