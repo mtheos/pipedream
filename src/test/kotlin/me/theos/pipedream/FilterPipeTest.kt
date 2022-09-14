@@ -3,7 +3,6 @@ package me.theos.pipedream
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.lang.AssertionError
-import kotlin.test.assertEquals
 
 internal class FilterPipeTest {
   companion object {
