@@ -26,30 +26,58 @@ open class Pipe<T> : Pipeable<T> {
     return transformPipe.also { sinks.add(it) }.makePipe()
   }
 
-  override fun tee(): Pipeable<T> {
-    return this.also { sink() }
+  override fun <R> map(transform: (T) -> R): Pipeable<R> {
+    return FunctionalPipe(transform).also { sinks.add(it) }.makePipe()
   }
 
   override fun <R> map(transform: Function<T, R>): Pipeable<R> {
-    return FunctionalPipe(transform).also { sinks.add(it) }.makePipe()
+    @Suppress("UNCHECKED_CAST")
+    return map(transform as (T) -> R)
   }
-  override fun <R> biMap(transform: BiFunction<T, Boolean, R>): Pipeable<R> {
+
+  override fun <R> biMap(transform: (T, Boolean) -> R): Pipeable<R> {
     return BiFunctionalPipe(transform).also { sinks.add(it) }.makePipe()
+  }
+
+  override fun <R> biMap(transform: BiFunction<T, Boolean, R>): Pipeable<R> {
+    @Suppress("UNCHECKED_CAST")
+    return biMap(transform as (T, Boolean) -> R)
   }
 
   override fun reduce(reducer: (T, T) -> T): Pipeable<T> {
     return ReductionPipe(reducer).also { sinks.add(it) }
   }
 
+  override fun reduce(reducer: BiFunction<T, T, T>): Pipeable<T> {
+    @Suppress("UNCHECKED_CAST")
+    return reduce(reducer as (T, T) -> T)
+  }
+
   override fun <R> reduce(acc: R, reducer: (R, T) -> R): Pipeable<R> {
     return fold(acc, reducer)
   }
+
+  override fun <R> reduce(acc: R, reducer: BiFunction<R, T, R>): Pipeable<R> {
+    @Suppress("UNCHECKED_CAST")
+    return fold(acc, reducer as (R, T) -> R)
+  }
+
   override fun <R> fold(acc: R, reducer: (R, T) -> R): Pipeable<R> {
     return FoldingPipe(acc, reducer).also { sinks.add(it) }.makePipe()
   }
 
-  override fun filter(predicate: Predicate<T>): Pipeable<T> {
+  override fun <R> fold(acc: R, reducer: BiFunction<R, T, R>): Pipeable<R> {
+    @Suppress("UNCHECKED_CAST")
+    return fold(acc, reducer as (R, T) -> R)
+  }
+
+  override fun filter(predicate: (T) -> Boolean): Pipeable<T> {
     return FilterPipe(predicate).also { sinks.add(it) }
+  }
+
+  override fun filter(predicate: Predicate<T>): Pipeable<T> {
+    @Suppress("UNCHECKED_CAST")
+    return filter(predicate as (T) -> Boolean)
   }
 
   override fun sink(): SinkCollection<T> {
@@ -60,8 +88,13 @@ open class Pipe<T> : Pipeable<T> {
     return SinkCollection(sink).also { sinks.add(it) }
   }
 
+  override fun sink(sink: (T) -> Unit) {
+    sink(SinkConsumer(sink))
+  }
+
   override fun sink(sink: Consumer<T>) {
-    sink(SinkConsumer(sink::accept))
+    @Suppress("UNCHECKED_CAST")
+    sink(sink as (T) -> Unit)
   }
 
   override fun sink(sink: Sinkable<T>) {

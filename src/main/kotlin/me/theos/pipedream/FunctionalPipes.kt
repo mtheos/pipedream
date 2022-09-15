@@ -49,7 +49,7 @@ internal class FilterPipe<T>(private var fn: Predicate<T>) : Pipe<T>(), Pipeable
   }
 }
 
-internal class ReductionPipe<T>(private val fn: (T, T) -> T) : Pipe<T>(), Sinkable<T> {
+internal class ReductionPipe<T>(private val fn: BiFunction<T, T, T>) : Pipe<T>(), Sinkable<T> {
   private var acc: T? = null
 
   override fun toString(): String {
@@ -59,7 +59,7 @@ internal class ReductionPipe<T>(private val fn: (T, T) -> T) : Pipe<T>(), Sinkab
   override fun accept(elem: T, last: Boolean) {
     acc = when (acc) {
       null -> elem
-      else -> fn(acc!!, elem)
+      else -> fn.apply(acc!!, elem)
     }
     if (last) {
       super.accept(acc!!, true)
@@ -67,7 +67,7 @@ internal class ReductionPipe<T>(private val fn: (T, T) -> T) : Pipe<T>(), Sinkab
   }
 }
 
-internal class FoldingPipe<T, R>(private var acc: R, private val fn: (R, T) -> R) : Sinkable<T> {
+internal class FoldingPipe<T, R>(private var acc: R, private val fn: BiFunction<R, T, R>) : Sinkable<T> {
   private var sink: Sinkable<R>? = null
 
   override fun toString(): String {
@@ -76,7 +76,7 @@ internal class FoldingPipe<T, R>(private var acc: R, private val fn: (R, T) -> R
 
   override fun accept(elem: T, last: Boolean) {
     Preconditions.checkNotNull(sink)
-    acc = fn(acc, elem)
+    acc = fn.apply(acc, elem)
     if (last) {
       sink!!.accept(acc, true)
     }
