@@ -30,6 +30,12 @@ tasks.withType<KotlinCompile> {
     kotlinOptions.jvmTarget = "1.8"
 }
 
+tasks.register("copyPom") {
+    doLast {
+        File("$buildDir/publications/maven/pom-default.xml").copyTo(File("pom.xml"), true)
+    }
+}
+
 publishing {
     publications {
         create<MavenPublication>("maven") {
@@ -37,6 +43,9 @@ publishing {
             from(components["kotlin"])
             pom {
                 packaging = "jar"
+                scm {
+                    url.set("https://github.com/mtheos/pipedream")
+                }
                 name.set("pipedream")
                 description.set("A library for creating pipes that tee")
                 developers {
@@ -49,3 +58,6 @@ publishing {
         }
     }
 }
+
+tasks.getByName("copyPom").dependsOn("generatePomFileForMavenPublication")
+tasks.getByName("publishToMavenLocal").dependsOn("copyPom")
