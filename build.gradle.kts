@@ -31,6 +31,8 @@ tasks.withType<KotlinCompile> {
 }
 
 tasks.register("copyPom") {
+    description = "Copy pom-default.xml from build into the repo root"
+    group = "publishing"
     doLast {
         File("$buildDir/publications/maven/pom-default.xml").copyTo(File("pom.xml"), true)
     }
