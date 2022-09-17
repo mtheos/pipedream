@@ -1,4 +1,4 @@
 steps:
-  - command: "./build.sh"
+  - command: "./.buildkite/build.sh"
   - wait
-  - command: "./test.sh"
+  - command: "./.buildkite/test.sh"
