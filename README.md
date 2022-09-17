@@ -18,7 +18,7 @@ val longNames = pipe.filter { it.length > 5 }.sink()
 
 // Pass your own collection to sink() and it will fill that (this is not a primary sink)
 val capitalizedShortNamesList = mutableListOf<String>()
-val capitalizedShortNames = capitalize.filter { it.length < 5 }.sink(capitalizedShortNamesList)
+capitalize.filter { it.length < 5 }.sink(capitalizedShortNamesList)
 
 val longestName = capitalize.reduce { acc: String, it: String -> if (acc.length > it.length) acc else it }
 // supplier interface for singular results
