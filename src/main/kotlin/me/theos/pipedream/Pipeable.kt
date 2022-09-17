@@ -15,11 +15,12 @@ interface Pipeable<T> : Sinkable<T> {
   fun <R> biMap(transform: BiFunction<T, Boolean, R>): Pipeable<R>
   fun filter(predicate: (T) -> Boolean): Pipeable<T>
   fun filter(predicate: Predicate<T>): Pipeable<T>
-  fun sink(): SinkCollection<T>
-  fun sink(sink: MutableCollection<T>): SinkCollection<T>
-  fun sink(sink: (T) -> Unit)
-  fun sink(sink: Consumer<T>)
-  fun sink(sink: Sinkable<T>)
+  fun result(): List<T>
+  fun sink(): Pipeable<T>
+  fun sink(sink: MutableCollection<T>): Pipeable<T>
+  fun sink(sink: (T) -> Unit): Pipeable<T>
+  fun sink(sink: Consumer<T>): Pipeable<T>
+  fun sink(sink: Sinkable<T>): Pipeable<T>
   fun sinkValue(): Supplier<T>
   fun reduce(reducer: (acc: T, it: T) -> T): Pipeable<T>
   fun reduce(reducer: BiFunction<T, T, T>): Pipeable<T>

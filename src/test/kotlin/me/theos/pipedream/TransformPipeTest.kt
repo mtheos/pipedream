@@ -39,6 +39,6 @@ internal class TransformPipeTest {
         pipe.accept(it.next(), !it.hasNext())
       }
     }
-    assertEquals(elements.filter(fn1).map(fn2), sink.get())
+    assertEquals(elements.filter(fn1).map(fn2), sink.result())
   }
 }

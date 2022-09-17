@@ -23,8 +23,8 @@ internal class PipeTest {
     val pipe2 = Pipe<String>().filter { it == "one" }
     val sink = pipe.into(pipe2).sink()
     elements.source().pipe(pipe)
-    assertTrue(sink.get().size == 1)
-    assertEquals(sink.get().first(), elements.first())
+    assertTrue(sink.result().size == 1)
+    assertEquals(sink.result().first(), elements.first())
   }
 
   @Test
@@ -35,7 +35,7 @@ internal class PipeTest {
     }
     val sink = pipe.into(pipe2).sink()
     elements.source().pipe(pipe)
-    assertEquals(sink.get(), elements.map { it.length })
+    assertEquals(sink.result(), elements.map { it.length })
   }
 
   @Test
@@ -43,7 +43,7 @@ internal class PipeTest {
     val elements = listOf("one", "two", "three", "four")
     val sink = pipe.map { it.length } .sink()
     elements.source().pipe(pipe)
-    assertEquals(sink.get(), elements.map { it.length })
+    assertEquals(sink.result(), elements.map { it.length })
   }
 
   @Test
@@ -51,7 +51,7 @@ internal class PipeTest {
     val elements = listOf("one", "two", "three", "four")
     val sink = pipe.biMap { it, last -> if (last) 0 else it.length }.sink()
     elements.source().pipe(pipe)
-    assertEquals(sink.get(), elements.map { if (it == "four") 0 else it.length })
+    assertEquals(sink.result(), elements.map { if (it == "four") 0 else it.length })
   }
 
   @Test
@@ -59,8 +59,8 @@ internal class PipeTest {
     val elements = listOf("one", "two", "three", "four")
     val sink = pipe.filter { it.length % 2 == 1 }.sink()
     elements.source().pipe(pipe)
-    assertFalse(sink.get().contains("four"))
-    sink.get().forEach { assertTrue(elements.contains(it)) }
+    assertFalse(sink.result().contains("four"))
+    sink.result().forEach { assertTrue(elements.contains(it)) }
   }
 
   @Test
@@ -68,7 +68,7 @@ internal class PipeTest {
     val elements = listOf("one", "two", "three", "four")
     val sink = pipe.reduce { a, b -> "$a$b" }.sink()
     elements.source().pipe(pipe)
-    assertEquals(sink.get().first(), elements.reduce { acc, s -> acc + s })
+    assertEquals(sink.result().first(), elements.reduce { acc, s -> acc + s })
   }
 
   @Test
@@ -76,7 +76,7 @@ internal class PipeTest {
     val elements = listOf("one", "two", "three", "four")
     val sink = pipe.reduce(0) { a, b -> a + b.length }.sink()
     elements.source().pipe(pipe)
-    assertEquals(sink.get().first(), elements.fold(0) { acc, s -> acc + s.length })
+    assertEquals(sink.result().first(), elements.fold(0) { acc, s -> acc + s.length })
   }
 
   @Test
@@ -84,24 +84,23 @@ internal class PipeTest {
     val elements = listOf("one", "two", "three", "four")
     val sink = pipe.fold(0) { a, b -> a + b.length }.sink()
     elements.source().pipe(pipe)
-    assertEquals(sink.get().first(), elements.fold(0) { acc, s -> acc + s.length })
+    assertEquals(sink.result().first(), elements.fold(0) { acc, s -> acc + s.length })
   }
 
   @Test
-  fun testSinkCollection() {
+  fun testPrimarySinkCollection() {
     val elements = listOf("one", "two", "three", "four")
     val sink = pipe.sink()
     elements.source().pipe(pipe)
-    assertEquals(sink.get(), elements)
+    assertEquals(sink.result(), elements)
   }
 
   @Test
-  fun testSinkCollectionWithList() {
+  fun testListSinkCollection() {
     val elements = listOf("one", "two", "three", "four")
     val lis = mutableListOf<String>()
-    val sink = pipe.sink(lis)
+    pipe.sink(lis)
     elements.source().pipe(pipe)
-    assertEquals(sink.get(), lis)
     assertEquals(elements, lis)
   }
 
@@ -109,7 +108,7 @@ internal class PipeTest {
   fun testSinkConsumer() {
     val elements = listOf("one", "two", "three", "four")
     var value = elements[0]
-    pipe.sink { s -> value = s }
+    pipe.sink { value = it }
     elements.forEach { pipe.accept(it, false).run { assertEquals(it, value) } }
   }
 
