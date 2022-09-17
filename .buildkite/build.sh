@@ -2,4 +2,4 @@
 
 set -euo pipefail
 
-echo "Build script"
+gradle build

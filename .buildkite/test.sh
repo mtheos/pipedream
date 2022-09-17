@@ -2,4 +2,4 @@
 
 set -euo pipefail
 
-echo "Test script"
+gradle test
