@@ -4,17 +4,13 @@ import com.google.common.base.Preconditions
 import java.util.function.Consumer
 import java.util.function.Supplier
 
-class SinkCollection<T>(private val sink: MutableCollection<T>) : Sinkable<T>, Iterable<T>, Supplier<List<T>> {
+internal class SinkCollection<T>(private val sink: MutableCollection<T>) : Sinkable<T> {
   override fun accept(elem: T, last: Boolean) {
     sink.add(elem)
   }
 
-  override fun get(): List<T> {
+  fun toList(): List<T> {
     return sink.toList()
-  }
-
-  override fun iterator(): Iterator<T> {
-    return sink.iterator()
   }
 
   override fun toString(): String {
@@ -22,7 +18,7 @@ class SinkCollection<T>(private val sink: MutableCollection<T>) : Sinkable<T>, I
   }
 }
 
-class SinkValue<T> : Sinkable<T>, Supplier<T> {
+internal class SinkValue<T> : Sinkable<T>, Supplier<T> {
   private var value: T? = null
 
   override fun get(): T {
@@ -41,7 +37,7 @@ class SinkValue<T> : Sinkable<T>, Supplier<T> {
 }
 
 
-class SinkConsumer<in T>(private val sink: Consumer<T>) : Sinkable<T> {
+internal class SinkConsumer<in T>(private val sink: Consumer<T>) : Sinkable<T> {
   override fun accept(elem: T, last: Boolean) {
     sink.accept(elem)
   }

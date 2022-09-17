@@ -29,19 +29,6 @@ internal class SinkCollectionTest {
     val produced = setOf("One", "Two", "Three")
     val sink = SinkCollection(sinkList)
     produced.forEach { sink.accept(it, false) }
-    assertEquals(sink.get(), sinkList)
-  }
-
-  @Test
-  fun testSinkReturnsIterator() {
-    val produced = setOf("One", "Two", "Three")
-    val sink = SinkCollection(sinkList)
-    produced.forEach { sink.accept(it, false) }
-    sink.iterator().let { it1 ->
-      sinkList.iterator().let { it2 ->
-        assertEquals(it1.hasNext(), it2.hasNext())
-        assertEquals(it1.next(), it2.next())
-      }
-    }
+    assertEquals(sink.toList(), sinkList)
   }
 }
