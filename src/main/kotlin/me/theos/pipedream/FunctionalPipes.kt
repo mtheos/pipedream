@@ -41,7 +41,7 @@ internal class BiFunctionalPipe<T, R>(private val fn: BiFunction<T, Boolean, R>)
   }
 }
 
-internal class FilterPipe<T>(private var fn: Predicate<T>) : Pipe<T>(), Pipeable<T> {
+internal class FilterPipe<T>(private var fn: Predicate<T>) : Pipe<T>() {
   override fun accept(elem: T, last: Boolean) {
     if (fn.test(elem)) {
       super.accept(elem, last)
@@ -49,7 +49,7 @@ internal class FilterPipe<T>(private var fn: Predicate<T>) : Pipe<T>(), Pipeable
   }
 }
 
-internal class ReductionPipe<T>(private val fn: BiFunction<T, T, T>) : Pipe<T>(), Sinkable<T> {
+internal class ReductionPipe<T>(private val fn: BiFunction<T, T, T>) : Pipe<T>() {
   private var acc: T? = null
 
   override fun toString(): String {
