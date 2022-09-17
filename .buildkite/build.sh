@@ -2,4 +2,4 @@
 
 set -euo pipefail
 
-gradle build
+/opt/gradle/bin/gradle build

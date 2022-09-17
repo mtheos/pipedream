@@ -31,7 +31,3 @@ gradle_ver=gradle-7.4.2
 curl -O "https:///downloads.gradle-dn.com/distributions/${gradle_ver}-bin.zip"
 unzip "${gradle_ver}-bin.zip"
 sudo mv ${gradle_ver} /opt/gradle
-
-sudo touch /etc/profile.d/gradle.sh
-echo "export GRADLE_HOME=/opt/gradle/${gradle_ver}" | sudo tee /etc/profile.d/gradle.sh
-echo "export PATH=\${GRADLE_HOME}/bin:\${PATH}" | sudo tee -a /etc/profile.d/gradle.sh

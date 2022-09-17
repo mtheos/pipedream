@@ -2,4 +2,4 @@
 
 set -euo pipefail
 
-gradle test
+/opt/gradle/bin/gradle test
