@@ -1,0 +1,7 @@
+agents:
+  queue: "pipedream"
+
+steps:
+  - command: "build.sh"
+  - wait
+  - command: "test.sh"
