@@ -16,10 +16,9 @@ internal class PipelineTest {
   @Test
   fun testBasicPipeline() {
     val result = mutableListOf<Int>()
-    Pipeline.from(elements)
+    Pipeline.of(elements)
       .map { it.length }
       .sink(result)
-      .pipe()
     
     assertThat(result).containsExactly(3, 3, 5, 4)
   }
@@ -27,11 +26,10 @@ internal class PipelineTest {
   @Test
   fun testMapThenFilter() {
     val result = mutableListOf<String>()
-    Pipeline.from(elements)
+    Pipeline.of(elements)
       .map { it.uppercase() }
       .filter { it.length > 3 }
       .sink(result)
-      .pipe()
     
     assertThat(result).containsExactly("THREE", "FOUR")
   }
@@ -39,46 +37,30 @@ internal class PipelineTest {
   @Test
   fun testFilter() {
     val result = mutableListOf<String>()
-    val pipeline = Pipeline.from(elements)
+    Pipeline.of(elements)
       .filter { it.length % 2 == 1 }
       .sink(result)
-    
-    pipeline.pipe()
     
     assertThat(result).containsExactly("one", "two", "three")
   }
 
   @Test
-  fun testFold() {
-    val result = mutableListOf<Int>()
-    Pipeline.from(elements)
-      .fold(0) { acc: Int, s: String -> acc + s.length }
-      .sink(result)
-      .pipe()
-    
-    assertThat(result).containsExactly(15)
-  }
-
-  @Test
   fun testMultipleTransformations() {
     val result = mutableListOf<String>()
-    Pipeline.from(elements)
+    Pipeline.of(elements)
       .map { it.uppercase() }
       .map { it.reversed() }
       .filter { it.length > 3 }
       .sink(result)
-      .pipe()
     
     assertThat(result).containsExactly("EERHT", "RUOF")
   }
 
   @Test
   fun testSinkToResult() {
-    val pipeline = Pipeline.from(elements)
+    val result = Pipeline.of(elements)
       .map { it.length }
       .sink()
-    pipeline.pipe()
-    val result = pipeline.result()
     
     assertThat(result).containsExactly(3, 3, 5, 4)
   }
@@ -86,10 +68,9 @@ internal class PipelineTest {
   @Test
   fun testEmptySource() {
     val result = mutableListOf<Int>()
-    Pipeline.from(emptyList<String>())
+    Pipeline.of(emptyList<String>())
       .map { it.length }
       .sink(result)
-      .pipe()
     
     assertThat(result).isEmpty()
   }
@@ -97,30 +78,18 @@ internal class PipelineTest {
   @Test
   fun testSingleElement() {
     val result = mutableListOf<Int>()
-    Pipeline.from(listOf("a"))
+    Pipeline.of(listOf("a"))
       .map { it.length }
       .sink(result)
-      .pipe()
     
     assertThat(result).containsExactly(1)
   }
 
   @Test
-  fun testSourceCanOnlyBeUsedOnce() {
-    val pipeline = Pipeline.from(elements).map { it.length }.sink()
-    pipeline.pipe()
-    
-    assertThatThrownBy { pipeline.pipe() }
-      .isInstanceOf(IllegalStateException::class.java)
-      .hasMessage("Source has already been consumed")
-  }
-
-  @Test
   fun testSinkConsumer() {
     var lastValue: String? = null
-    Pipeline.from(elements)
+    Pipeline.of(elements)
       .sink { lastValue = it }
-      .pipe()
     
     assertThat(lastValue).isEqualTo("four")
   }
@@ -128,9 +97,8 @@ internal class PipelineTest {
   @Test
   fun testVarargsSource() {
     val result = mutableListOf<String>()
-    Pipeline.from("a", "b", "c")
+    Pipeline.of("a", "b", "c")
       .sink(result)
-      .pipe()
     
     assertThat(result).containsExactly("a", "b", "c")
   }
@@ -138,40 +106,21 @@ internal class PipelineTest {
   @Test
   fun testFilterThenMap() {
     val result = mutableListOf<Int>()
-    Pipeline.from(elements)
+    Pipeline.of(elements)
       .filter { it.length > 3 }
       .map { it.length }
       .sink(result)
-      .pipe()
     
     assertThat(result).containsExactly(5, 4)
   }
 
   @Test
-  fun testMultipleSinks() {
-    val result1 = mutableListOf<String>()
-    val result2 = mutableListOf<Int>()
-    
-    Pipeline.from(elements)
-      .map { it.uppercase() }
-      .sink(result1)
-      .map { it.length }
-      .sink(result2)
-      .pipe()
-    
-    assertThat(result1).containsExactly("ONE", "TWO", "THREE", "FOUR")
-    assertThat(result2).containsExactly(3, 3, 5, 4)
-  }
-
-  @Test
   fun testReduce() {
-    val pipeline = Pipeline.from(elements)
+    val result = Pipeline.of(elements)
       .map { it.length }
       .reduce { acc, it -> acc + it }
     
-    pipeline.pipe()
-    
-    assertThat(pipeline.reduced()).isEqualTo(15)
+    assertThat(result.get()).isEqualTo(15)
   }
 
   @Test
@@ -179,10 +128,9 @@ internal class PipelineTest {
     val largeList = (1..10000).map { "item$it" }
     val result = mutableListOf<Int>()
     
-    Pipeline.from(largeList)
+    Pipeline.of(largeList)
       .map { it.length }
       .sink(result)
-      .pipe()
     
     assertThat(result.size).isEqualTo(10000)
   }
@@ -190,10 +138,9 @@ internal class PipelineTest {
   @Test
   fun testMapReturningNull() {
     val result: MutableList<String?> = mutableListOf()
-    Pipeline.from(listOf("a", "bb", "ccc"))
+    Pipeline.of(listOf("a", "bb", "ccc"))
       .map<String?> { if (it.length > 1) it else null }
       .sink(result)
-      .pipe()
     
     assertThat(result).containsExactly(null, "bb", "ccc")
   }
@@ -201,24 +148,12 @@ internal class PipelineTest {
   @Test
   fun testMultipleMapFilters() {
     val result = mutableListOf<String>()
-    Pipeline.from(listOf("a", "bb", "ccc", "dddd", "eeeee"))
+    Pipeline.of(listOf("a", "bb", "ccc", "dddd", "eeeee"))
       .map { it.uppercase() }
       .filter { it.startsWith("C") || it.startsWith("D") }
       .map { it.reversed() }
       .sink(result)
-      .pipe()
     
     assertThat(result).containsExactly("CCC", "DDDD")
-  }
-
-  @Test
-  fun testChainedFold() {
-    val result = mutableListOf<Int>()
-    Pipeline.from(listOf("a", "bb", "ccc"))
-      .fold(0) { acc, s -> acc + 1 }
-      .sink(result)
-      .pipe()
-    
-    assertThat(result).containsExactly(3)
   }
 }

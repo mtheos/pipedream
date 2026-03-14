@@ -18,6 +18,7 @@ repositories {
 }
 
 dependencies {
+    implementation("io.reactivex.rxjava3:rxjava:3.1.9")
     testImplementation(kotlin("test"))
     testImplementation("org.assertj:assertj-core:3.23.1")
     jmhImplementation("org.openjdk.jmh:jmh-core:1.37")
