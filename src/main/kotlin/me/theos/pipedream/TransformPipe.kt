@@ -9,16 +9,23 @@ abstract class TransformPipe<T, R> : Sinkable<T> {
     return "${javaClass.simpleName}{sinks=$sink}"
   }
 
-  override fun accept(elem: T, last: Boolean) {
-    sinkAccept(transform(elem, last)!!, last)
+  override fun accept(elem: T) {
+    val transformed = transform(elem)
+    if (transformed != null) {
+      sinkAccept(transformed)
+    }
   }
 
-  protected fun sinkAccept(elem: R, last: Boolean) {
+  override fun complete() {
+    sink?.complete()
+  }
+
+  protected fun sinkAccept(elem: R) {
     Preconditions.checkNotNull(sink)
-    sink!!.accept(elem, last)
+    sink!!.accept(elem)
   }
 
-  abstract fun transform(elem: T, last: Boolean): R?
+  abstract fun transform(elem: T): R?
 
   fun makePipe(): Pipeable<R> {
     Preconditions.checkState(sink == null)

@@ -1,127 +1,123 @@
 package me.theos.pipedream
 
+import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertFalse
-import kotlin.test.assertTrue
 
 internal class PipeTest {
-  companion object {
-    private lateinit var pipe: Pipe<String>
-  }
-
-  @BeforeEach
-  fun setUp() {
-    pipe = Pipe()
+  @Test
+  fun testPipeWithoutSink() {
+    val pipe = Pipe<String>()
+    
+    assertThatThrownBy { pipe.accept("test") }
+      .isInstanceOf(IllegalStateException::class.java)
+      .hasMessage("Pipe doesn't connect to anything")
   }
 
   @Test
-  fun testInto() {
-    val elements = listOf("one", "two", "three", "four")
-    val pipe2 = Pipe<String>().filter { it == "one" }
-    val sink = pipe.into(pipe2).sink()
-    elements.source().pipe(pipe)
-    assertTrue(sink.result().size == 1)
-    assertEquals(sink.result().first(), elements.first())
+  fun testPipeWithSink() {
+    val result = mutableListOf<String>()
+    val pipe = Pipe<String>()
+    pipe.sink(result)
+    
+    pipe.accept("a")
+    pipe.accept("b")
+    pipe.complete()
+    
+    assertThat(result).containsExactly("a", "b")
   }
 
   @Test
-  fun testIntoTransform() {
-    val elements = listOf("one", "two", "three", "four")
-    val pipe2 = object : TransformPipe<String, Int>() {
-      override fun transform(elem: String, last: Boolean): Int = elem.length
-    }
-    val sink = pipe.into(pipe2).sink()
-    elements.source().pipe(pipe)
-    assertEquals(sink.result(), elements.map { it.length })
+  fun testPipeChaining() {
+    val result = mutableListOf<Int>()
+    val pipe = Pipe<String>()
+    pipe.map { it.length }.sink(result)
+    
+    pipe.accept("a")
+    pipe.accept("bb")
+    pipe.complete()
+    
+    assertThat(result).containsExactly(1, 2)
   }
 
   @Test
-  fun testMap() {
-    val elements = listOf("one", "two", "three", "four")
-    val sink = pipe.map { it.length } .sink()
-    elements.source().pipe(pipe)
-    assertEquals(sink.result(), elements.map { it.length })
+  fun testPipeFilter() {
+    val result = mutableListOf<String>()
+    val pipe = Pipe<String>()
+    pipe.filter { it.length > 1 }.sink(result)
+    
+    pipe.accept("a")
+    pipe.accept("bb")
+    pipe.accept("ccc")
+    pipe.complete()
+    
+    assertThat(result).containsExactly("bb", "ccc")
   }
 
   @Test
-  fun testBiMap() {
-    val elements = listOf("one", "two", "three", "four")
-    val sink = pipe.biMap { it, last -> if (last) 0 else it.length }.sink()
-    elements.source().pipe(pipe)
-    assertEquals(sink.result(), elements.map { if (it == "four") 0 else it.length })
+  fun testPipeFold() {
+    val result = mutableListOf<Int>()
+    val pipe = Pipe<String>()
+    pipe.fold(0) { acc, s -> acc + s.length }.sink(result)
+    
+    pipe.accept("a")
+    pipe.accept("bb")
+    pipe.complete()
+    
+    assertThat(result).containsExactly(3)
   }
 
   @Test
-  fun testFilter() {
-    val elements = listOf("one", "two", "three", "four")
-    val sink = pipe.filter { it.length % 2 == 1 }.sink()
-    elements.source().pipe(pipe)
-    assertFalse(sink.result().contains("four"))
-    sink.result().forEach { assertTrue(elements.contains(it)) }
+  fun testPipeMultipleSinks() {
+    val result1 = mutableListOf<String>()
+    val result2 = mutableListOf<Int>()
+    val pipe = Pipe<String>()
+    pipe.sink(result1)
+    pipe.map { it.length }.sink(result2)
+    
+    pipe.accept("a")
+    pipe.accept("bb")
+    pipe.complete()
+    
+    assertThat(result1).containsExactly("a", "bb")
+    assertThat(result2).containsExactly(1, 2)
   }
 
   @Test
-  fun testReduce() {
-    val elements = listOf("one", "two", "three", "four")
-    val sink = pipe.reduce { a, b -> "$a$b" }.sink()
-    elements.source().pipe(pipe)
-    assertEquals(sink.result().first(), elements.reduce { acc, s -> acc + s })
+  fun testPipeResultWithoutSink() {
+    val pipe = Pipe<String>()
+    
+    assertThatThrownBy { pipe.result() }
+      .isInstanceOf(NullPointerException::class.java)
   }
 
   @Test
-  fun testReduceFold() {
-    val elements = listOf("one", "two", "three", "four")
-    val sink = pipe.reduce(0) { a, b -> a + b.length }.sink()
-    elements.source().pipe(pipe)
-    assertEquals(sink.result().first(), elements.fold(0) { acc, s -> acc + s.length })
+  fun testPipeToSinkable() {
+    val sink = SinkCollection(mutableListOf<String>())
+    val pipe = Pipe<String>()
+    pipe.sink(sink)
+    
+    pipe.accept("test")
+    pipe.complete()
+    
+    assertThat(sink.toList()).containsExactly("test")
   }
 
   @Test
-  fun testFold() {
-    val elements = listOf("one", "two", "three", "four")
-    val sink = pipe.fold(0) { a, b -> a + b.length }.sink()
-    elements.source().pipe(pipe)
-    assertEquals(sink.result().first(), elements.fold(0) { acc, s -> acc + s.length })
-  }
-
-  @Test
-  fun testPrimarySinkCollection() {
-    val elements = listOf("one", "two", "three", "four")
-    val sink = pipe.sink()
-    elements.source().pipe(pipe)
-    assertEquals(sink.result(), elements)
-  }
-
-  @Test
-  fun testListSinkCollection() {
-    val elements = listOf("one", "two", "three", "four")
-    val lis = mutableListOf<String>()
-    pipe.sink(lis)
-    elements.source().pipe(pipe)
-    assertEquals(elements, lis)
-  }
-
-  @Test
-  fun testSinkConsumer() {
-    val elements = listOf("one", "two", "three", "four")
-    var value = elements[0]
-    pipe.sink { value = it }
-    elements.forEach { pipe.accept(it, false).run { assertEquals(it, value) } }
-  }
-
-  @Test
-  fun testSinkableConsumer() {
-    val elements = listOf("one", "two", "three", "four")
-    var value = elements[0]
-    pipe.sink { s, _ -> value = s }
-    elements.forEach { pipe.accept(it, false).run { assertEquals(it, value) } }
-  }
-
-  @Test
-  fun testRequiresSink() {
-    assertThatThrownBy { pipe.accept("Throw", false) }.isExactlyInstanceOf(IllegalStateException::class.java)
+  fun testPipeComplete() {
+    var completeCalled = false
+    val result = mutableListOf<String>()
+    val pipe = Pipe<String>()
+    pipe.sink(result)
+    pipe.sink(object : Sinkable<String> {
+      override fun accept(elem: String) {}
+      override fun complete() { completeCalled = true }
+    })
+    
+    pipe.accept("a")
+    pipe.complete()
+    
+    assertThat(completeCalled).isTrue()
+    assertThat(result).containsExactly("a")
   }
 }

@@ -1,8 +1,9 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    kotlin("jvm") version "1.7.10"
+    kotlin("jvm") version "2.3.0"
     id("maven-publish")
+    id("me.champeau.jmh") version "0.7.2"
 }
 
 group = "me.theos"
@@ -20,21 +21,19 @@ dependencies {
     implementation("com.google.guava:guava:31.1-jre")
     testImplementation(kotlin("test"))
     testImplementation("org.assertj:assertj-core:3.23.1")
+    jmhImplementation("org.openjdk.jmh:jmh-core:1.37")
+    jmhImplementation("org.openjdk.jmh:jmh-generator-annprocess:1.37")
 }
 
 tasks.test {
     useJUnitPlatform()
 }
 
-tasks.withType<KotlinCompile> {
-    kotlinOptions.jvmTarget = "1.8"
-}
-
 tasks.register("copyPom") {
     description = "Copy pom-default.xml from build into the repo root"
     group = "publishing"
     doLast {
-        File("$buildDir/publications/maven/pom-default.xml").copyTo(File("pom.xml"), true)
+        File("${layout.buildDirectory.get()}/publications/maven/pom-default.xml").copyTo(File("pom.xml"), true)
     }
 }
 

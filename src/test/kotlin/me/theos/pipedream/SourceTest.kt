@@ -1,35 +1,61 @@
 package me.theos.pipedream
 
+import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import kotlin.test.assertTrue
+import java.util.stream.Stream
 
 internal class SourceTest {
-  companion object {
-    private lateinit var source: Source<String>
-  }
-
-  @BeforeEach
-  fun setUp() {
-    source = sourceOf("One", "Two", "Three")
+  @Test
+  fun testFromStream() {
+    val result = mutableListOf<String>()
+    val sink = SinkCollection(result)
+    Source(Stream.of("one", "two", "three").iterator()).pipe(sink)
+    
+    assertThat(result).containsExactly("one", "two", "three")
   }
 
   @Test
-  fun testSourcePipesInOrder() {
-    val produced = setOf("One", "Two", "Three")
-    val final = "Three"
-    val sink = { elem: String, last: Boolean ->
-      assertTrue(elem in produced, "Element $elem not in $produced")
-      assertTrue(elem == final || !last, "Element $elem not last")
+  fun testFromIterator() {
+    val result = mutableListOf<String>()
+    val sink = SinkCollection(result)
+    val iterator = listOf("a", "b", "c").iterator()
+    Source(iterator).pipe(sink)
+    
+    assertThat(result).containsExactly("a", "b", "c")
+  }
+
+  @Test
+  fun testFromEmptyIterator() {
+    val result = mutableListOf<String>()
+    val sink = SinkCollection(result)
+    val iterator = emptyList<String>().iterator()
+    Source(iterator).pipe(sink)
+    
+    assertThat(result).isEmpty()
+  }
+
+  @Test
+  fun testConsumedError() {
+    val sink = SinkCollection(mutableListOf<String>())
+    val source = Source(listOf("a", "b", "c").iterator())
+    source.pipe(sink)
+    
+    assertThatThrownBy { source.pipe(sink) }
+      .isInstanceOf(IllegalStateException::class.java)
+      .hasMessage("Source has already been consumed")
+  }
+
+  @Test
+  fun testCompleteCalled() {
+    var completeCalled = false
+    val sink = object : Sinkable<String> {
+      override fun accept(elem: String) {}
+      override fun complete() { completeCalled = true }
     }
-    source.pipe(sink)
-  }
-
-  @Test
-  fun testSourceCanOnlyBeUsedOnce() {
-    val sink = Sinkable { _: String, _: Boolean -> }
-    source.pipe(sink)
-    assertThatThrownBy { source.pipe(sink) }.isExactlyInstanceOf(IllegalStateException::class.java)
+    
+    Source(listOf("a", "b").iterator()).pipe(sink)
+    
+    assertThat(completeCalled).isTrue()
   }
 }
