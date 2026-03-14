@@ -18,7 +18,6 @@ repositories {
 }
 
 dependencies {
-    implementation("com.google.guava:guava:31.1-jre")
     testImplementation(kotlin("test"))
     testImplementation("org.assertj:assertj-core:3.23.1")
     jmhImplementation("org.openjdk.jmh:jmh-core:1.37")

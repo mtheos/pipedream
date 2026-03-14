@@ -1,18 +1,12 @@
 package me.theos.pipedream
 
-import com.google.common.base.Preconditions
-
 abstract class TransformPipe<T, R> : Sinkable<T> {
   private var sink: Sinkable<R>? = null
-
-  override fun toString(): String {
-    return "${javaClass.simpleName}{sinks=$sink}"
-  }
 
   override fun accept(elem: T) {
     val transformed = transform(elem)
     if (transformed != null) {
-      sinkAccept(transformed)
+      sink!!.accept(transformed)
     }
   }
 
@@ -21,14 +15,17 @@ abstract class TransformPipe<T, R> : Sinkable<T> {
   }
 
   protected fun sinkAccept(elem: R) {
-    Preconditions.checkNotNull(sink)
     sink!!.accept(elem)
   }
 
   abstract fun transform(elem: T): R?
 
+  @Suppress("UNCHECKED_CAST")
   fun makePipe(): Pipeable<R> {
-    Preconditions.checkState(sink == null)
-    return Pipe<R>().also { sink = it }
+    val pipe = Pipe<R>()
+    sink = pipe
+    return pipe
   }
+
+  override fun toString(): String = "TransformPipe{sink=$sink}"
 }

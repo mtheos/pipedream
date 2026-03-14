@@ -1,6 +1,5 @@
 package me.theos.pipedream
 
-import com.google.common.base.Preconditions
 import java.util.function.Supplier
 
 open class Pipe<T> : Pipeable<T> {
@@ -8,14 +7,16 @@ open class Pipe<T> : Pipeable<T> {
   private var primarySink: SinkCollection<T>? = null
 
   override fun accept(elem: T) {
-    Preconditions.checkState(sinks.size > 0, "Pipe doesn't connect to anything")
-    sinks.forEach { sink ->
-      sink.accept(elem)
+    if (sinks.isEmpty()) throw IllegalStateException("Pipe doesn't connect to anything")
+    for (i in sinks.indices) {
+      sinks[i].accept(elem)
     }
   }
 
   override fun complete() {
-    sinks.forEach { it.complete() }
+    for (i in sinks.indices) {
+      sinks[i].complete()
+    }
   }
 
   override fun <R> map(transform: (T) -> R): Pipeable<R> {
@@ -31,13 +32,12 @@ open class Pipe<T> : Pipeable<T> {
   }
 
   override fun result(): List<T> {
-    Preconditions.checkNotNull(primarySink, "Pipe doesn't have a primary sink. Use `sink()` to create a primary sink on this pipe.")
-    return primarySink!!.toList()
+    return primarySink?.toList() ?: throw NullPointerException("Pipe doesn't have a primary sink. Use `sink()` to create a primary sink on this pipe.")
   }
 
   override fun sink(): Pipeable<T> {
     SinkCollection<T>(mutableListOf()).also {
-      sinks.add(it);
+      sinks.add(it)
       primarySink = it
     }
     return this
@@ -62,6 +62,6 @@ open class Pipe<T> : Pipeable<T> {
   }
 
   override fun toString(): String {
-    return "${javaClass.simpleName}{sinks=${sinks.size}}"
+    return "Pipe{sinks=${sinks.size}}"
   }
 }

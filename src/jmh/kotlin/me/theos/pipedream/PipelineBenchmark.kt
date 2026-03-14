@@ -14,9 +14,9 @@ import java.util.concurrent.TimeUnit
 @State(Scope.Benchmark)
 @BenchmarkMode(Mode.Throughput)
 @OutputTimeUnit(TimeUnit.SECONDS)
-@Warmup(iterations = 2, time = 500, timeUnit = TimeUnit.MILLISECONDS)
-@Measurement(iterations = 3, time = 500, timeUnit = TimeUnit.MILLISECONDS)
-@Fork(1)
+@Warmup(iterations = 3, time = 1)
+@Measurement(iterations = 5, time = 1)
+@Fork(1, jvmArgsAppend = ["-Xmx512m", "-Xms512m", "-Xlog:gc*:file=gc.log"])
 open class PipelineBenchmark {
     private val list = (1..10000).map { "item$it" }
 
@@ -71,5 +71,26 @@ open class PipelineBenchmark {
             .map { it.length }
             .reduce { acc, i -> acc + i }
             .orElse(0)
+    }
+
+    @Benchmark
+    fun pipelineLargeCollection(): List<Int> {
+        val largeList = (1..100000).map { "item$it" }
+        val result = mutableListOf<Int>()
+        Pipeline.from(largeList)
+            .map { it.length }
+            .filter { it > 5 }
+            .sink(result)
+            .pipe()
+        return result
+    }
+
+    @Benchmark
+    fun streamLargeCollection(): List<Int> {
+        val largeList = (1..100000).map { "item$it" }
+        return largeList.stream()
+            .map { it.length }
+            .filter { it > 5 }
+            .toList()
     }
 }

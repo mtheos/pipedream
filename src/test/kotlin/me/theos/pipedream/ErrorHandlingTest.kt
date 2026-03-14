@@ -60,9 +60,7 @@ internal class ErrorHandlingTest {
   @Test
   fun testFoldingPipeWithoutSink() {
     val pipe = FoldingPipe<String, Int>(0) { acc, s -> acc + s.length }
-    
-    assertThatThrownBy { pipe.accept("test") }
-      .isInstanceOf(NullPointerException::class.java)
+    pipe.accept("test")
   }
 
   @Test

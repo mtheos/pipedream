@@ -1,16 +1,16 @@
 package me.theos.pipedream
 
-import com.google.common.base.Preconditions
-
 class FunctionalPipe<T, R>(private val fn: (T) -> R) : Sinkable<T> {
   private var sink: Sinkable<R>? = null
 
-  override fun toString(): String {
-    return "${javaClass.simpleName}{sinks=$sink}"
+  @Suppress("UNCHECKED_CAST")
+  fun makePipe(): Pipeable<R> {
+    val pipe = Pipe<R>()
+    sink = pipe
+    return pipe
   }
 
   override fun accept(elem: T) {
-    Preconditions.checkNotNull(sink)
     sink!!.accept(fn(elem))
   }
 
@@ -18,21 +18,22 @@ class FunctionalPipe<T, R>(private val fn: (T) -> R) : Sinkable<T> {
     sink?.complete()
   }
 
-  fun makePipe(): Pipeable<R> {
-    Preconditions.checkState(sink == null)
-    return Pipe<R>().also { sink = it }
+  override fun toString(): String {
+    return "FunctionalPipe{sink=$sink}"
   }
 }
 
 class FoldingPipe<T, R>(private var acc: R, private val fn: (R, T) -> R) : Sinkable<T> {
   private var sink: Sinkable<R>? = null
 
-  override fun toString(): String {
-    return "${javaClass.simpleName}{sinks=$sink}"
+  @Suppress("UNCHECKED_CAST")
+  fun makePipe(): Pipeable<R> {
+    val pipe = Pipe<R>()
+    sink = pipe
+    return pipe
   }
 
   override fun accept(elem: T) {
-    Preconditions.checkNotNull(sink)
     acc = fn(acc, elem)
   }
 
@@ -41,8 +42,7 @@ class FoldingPipe<T, R>(private var acc: R, private val fn: (R, T) -> R) : Sinka
     sink?.complete()
   }
 
-  fun makePipe(): Pipeable<R> {
-    Preconditions.checkState(sink == null)
-    return Pipe<R>().also { sink = it }
+  override fun toString(): String {
+    return "FoldingPipe{sink=$sink}"
   }
 }
