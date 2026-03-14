@@ -4,12 +4,10 @@
   <component name="GradleSettings">
     <option name="linkedExternalProjectsSettings">
       <GradleProjectSettings>
-        <option name="distributionType" value="WRAPPED" />
         <option name="externalProjectPath" value="$PROJECT_DIR$" />
-        <option name="gradleHome" value="$USER_HOME$/gradle/gradle-7.0.2" />
         <option name="modules">
           <set>
-            <option value="$PROJECT_DIR$" />
+            <option value="//192.168.0.5/Knightmare_remote/Code/IntelliJ/pipedream" />
           </set>
         </option>
       </GradleProjectSettings>
